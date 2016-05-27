@@ -13,7 +13,7 @@ def example_search():
                 episode.download()
                 episode.subtitle()
 
-    print('We found %s episodes to download' % len(nrk.downloads()))
+    print('We found {0!s} episodes to download'.format(len(nrk.downloads())))
 
 # example_search()
 
@@ -23,11 +23,11 @@ def example_site_rip():
     nrk = NRK()
 
     all_programs = nrk.programs()
-    print('We found %s' % len(all_programs))
+    print('We found {0!s}'.format(len(all_programs)))
 
     would_have_downloaded = 0
     for program in all_programs:
-        print('So far %s' % would_have_downloaded)
+        print('So far {0!s}'.format(would_have_downloaded))
         if program.type == 'program':
             would_have_downloaded += 1
             # program.download()
@@ -39,7 +39,7 @@ def example_site_rip():
     # Start downloading stuff
     nrk.downloads().start()
 
-    print('If we where to download everything we would download %s' % would_have_downloaded)
+    print('If we where to download everything we would download {0!s}'.format(would_have_downloaded))
     # 15882.
 
 # example_site_rip()

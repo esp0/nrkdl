@@ -87,7 +87,7 @@ def timeme(func):
     def inner(*args, **kwargs):
         start = time.time()
         res = func(*args)
-        logging.info('\n\n%s took %s' % (func.__name__, time.time() - start))
+        logging.info('\n\n{0!s} took {1!s}'.format(func.__name__, time.time() - start))
         return res
     return inner
 
@@ -102,7 +102,7 @@ def dl(item, *args, **kwargs):
     url, quality, filename = item
 
     if DRY_RUN:
-        print(c_out('Should have downloaded %s because but didnt because of -dry_run\n' % filename))
+        print(c_out('Should have downloaded {0!s} because but didnt because of -dry_run\n'.format(filename)))
         return
 
     # encode to the consoles damn charset...
@@ -112,7 +112,7 @@ def dl(item, *args, **kwargs):
         filename = filename.encode(ENCODING, 'ignore')
 
     q = '' if VERBOSE else '-loglevel quiet '
-    cmd = 'ffmpeg %s-i %s -n -vcodec copy -acodec ac3 "%s.mkv" \n' % (q, url, filename)
+    cmd = 'ffmpeg {0!s}-i {1!s} -n -vcodec copy -acodec ac3 "{2!s}.mkv" \n'.format(q, url, filename)
     process = subprocess.Popen(cmd,
                                shell=True,
                                stdin=subprocess.PIPE,
@@ -170,7 +170,7 @@ def _console_select(l, print_args=None):
                 print(' '.join(x))
 
             except Exception as e:
-                print('some crap happend %s' % e)
+                print('some crap happend {0!s}'.format(e))
 
         elif isinstance(stuff, tuple):  # unbound, used to build a menu
             x = [c_out(stuff[x]) for x in print_args if stuff[x]]
@@ -206,17 +206,17 @@ def _fetch(path, **kwargs):
         r.raise_for_status()
         return r.json()
     except Exception as e:
-        logging.exception('Failed to %s' % e)
+        logging.exception('Failed to {0!s}'.format(e))
         return []
 
 
 def get_media_url(media_id):
     #print('get_media_url called %s media_id' % media_id)
     try:
-        response = _fetch('programs/%s' % media_id)
+        response = _fetch('programs/{0!s}'.format(media_id))
         return response.get('mediaUrl', '')
     except Exception as e:
-        logging.exception('Failed to %s' % e)
+        logging.exception('Failed to {0!s}'.format(e))
         return {}
 
 
@@ -278,7 +278,7 @@ class NRK(object):
                     else json
 
         """
-        s = _fetch('search/%s' % qp(q))
+        s = _fetch('search/{0!s}'.format(qp(q)))
 
         if strict:
             s['hits'] = [item for item in s['hits']
@@ -295,7 +295,7 @@ class NRK(object):
             return []
 
     def programs(self, category_id='all-programs'):
-        items = _fetch('categories/%s/programs' % category_id)
+        items = _fetch('categories/{0!s}/programs'.format(category_id))
         items = [item for item in items
                  if item.get('title', '').strip() != '' and
                  item['programId'] != 'notransmission']
@@ -303,10 +303,10 @@ class NRK(object):
         return map(_build, items)
 
     def program(self, program_id):
-        return [_build(_fetch('programs/%s' % program_id))]
+        return [_build(_fetch('programs/{0!s}'.format(program_id)))]
 
     def recent_programs(self, category_id='all-programs'):
-        return [_build(data) for data in _fetch('categories/%s/recentlysentprograms' % category_id)]
+        return [_build(data) for data in _fetch('categories/{0!s}/recentlysentprograms'.format(category_id))]
 
     def channels(self):
         return [Channel(data) for data in _fetch('channels/')]
@@ -316,11 +316,11 @@ class NRK(object):
 
     def popular_programs(self, category_id='all-programs'):  # fixme
         return [_build(item) for item in
-                _fetch('categories/%s/popularprograms' % category_id)]
+                _fetch('categories/{0!s}/popularprograms'.format(category_id))]
 
     def recommended_programs(self, category_id='all-programs'):
         return [_build(item) for item in
-                _fetch('categories/%s/recommendedprograms' % category_id)]
+                _fetch('categories/{0!s}/recommendedprograms'.format(category_id))]
 
     def downloads(self):
         return Downloader()
@@ -333,7 +333,7 @@ class NRK(object):
             parse_url(' '.join(urls))
 
         except Exception as e:
-            logging.exception('%s' % e)
+            logging.exception('{0!s}'.format(e))
 
     def _console(self, q):
         """ Used by CLI """
@@ -375,7 +375,7 @@ class NRK(object):
                     # do some search object stuff..
                     id = sr['hit']['seriesId']
 
-                    show = _fetch('series/%s' % id)
+                    show = _fetch('series/{0!s}'.format(id))
 
                     # if we select a show, we should be able to choose all eps.
                     if 'programs' in show:
@@ -412,7 +412,7 @@ class NRK(object):
         x = _console_select(what_programs, [0])  # should be list?
         media_element = _console_select(x[0][1](categories[0].id), ['full_title'])
         # type_list should be a media object
-        print('Found %s media elements' % len(media_element))
+        print('Found {0!s} media elements'.format(len(media_element)))
         dl_all = False
         for m_e in media_element:
             if SUBTITLE is True:
@@ -420,8 +420,8 @@ class NRK(object):
             if dl_all is True:
                 m_e.download()
                 continue
-            print(c_out('%s\n' % m_e.name))
-            print(c_out('%s\n' % m_e.description))
+            print(c_out('{0!s}\n'.format(m_e.name)))
+            print(c_out('{0!s}\n'.format(m_e.description)))
             a = raw_input('Do you wish to download this? y/n/all\n')
             if a == 'y':
                 m_e.download()
@@ -430,7 +430,7 @@ class NRK(object):
                 dl_all = True
 
         if len(self.downloads()):
-            aa = raw_input('Download que is %s do you wish to download everything now? y/n\n' % len(self.downloads()))
+            aa = raw_input('Download que is {0!s} do you wish to download everything now? y/n\n'.format(len(self.downloads())))
             d = self.downloads()
             if aa == 'y':
                 d.start()
@@ -451,14 +451,14 @@ class Media(object):
         self.file_path = os.path.join(SAVE_PATH, clean_name(self.name), self.file_name)
 
         if 'episodeNumberOrDate' in data:
-            self.full_title = '%s %s' % (self.name, data.get('episodeNumberOrDate', ''))
+            self.full_title = '{0!s} {1!s}'.format(self.name, data.get('episodeNumberOrDate', ''))
         else:
             self.full_title = self.title
 
     def _filename(self):
         name = clean_name(self.name)
         if 'episodeNumberOrDate' in self.data:
-            name += ' %s' % self.data.get('episodeNumberOrDate', '')
+            name += ' {0!s}'.format(self.data.get('episodeNumberOrDate', ''))
             # remove stuff that ffmpeg could complain about
             name = clean_name(name)
         return name
@@ -524,7 +524,7 @@ class Season(Media):
         self.series_id = series_id
 
     def episodes(self):
-        return [Episode(d) for d in _fetch('series/%s' % self.series_id)['programs'] if self.id == d.get('seasonId')]
+        return [Episode(d) for d in _fetch('series/{0!s}'.format(self.series_id))['programs'] if self.id == d.get('seasonId')]
 
 
 class Program(Media):
@@ -567,7 +567,7 @@ class Series(Media):
         return all_seasons
 
     def episodes(self):
-        return [Episode(d) for d in _fetch('series/%s' % self.id)['programs']]
+        return [Episode(d) for d in _fetch('series/{0!s}'.format(self.id))['programs']]
 
 
 class Channel(Media):
@@ -595,7 +595,7 @@ class Downloader(object):
 
     @classmethod
     def start(cls):
-        print('Downloads starting soon.. %s downloads to go' % len(cls.files_to_download))
+        print('Downloads starting soon.. {0!s} downloads to go'.format(len(cls.files_to_download)))
         #print(cls.files_to_download)
         return _download_all(cls.files_to_download)
 
@@ -623,7 +623,7 @@ class Subtitle(object):
 
     @classmethod
     def get_subtitles(cls, video_id, name=None, file_name=None, translate=False):
-        html = session.get("http://v8.psapi.nrk.no/programs/%s/subtitles/tt" % video_id).text
+        html = session.get("http://v8.psapi.nrk.no/programs/{0!s}/subtitles/tt".format(video_id)).text
         if not html:
             return None
 
@@ -636,7 +636,7 @@ class Subtitle(object):
                 raise
 
         content = cls._ttml_to_srt(html)
-        file_name = '%s.srt' % file_name
+        file_name = '{0!s}.srt'.format(file_name)
         file_name = os.path.join(SAVE_PATH, name, file_name)
 
         with open(file_name, 'w') as f:
@@ -678,7 +678,7 @@ class Subtitle(object):
 
     @classmethod
     def _time_to_str(cls, time):
-        return '%02d:%02d:%02d,%03d' % (time / 3600, (time % 3600) / 60, time % 60, (time % 1) * 1000)
+        return '{0:02d}:{1:02d}:{2:02d},{3:03d}'.format(time / 3600, (time % 3600) / 60, time % 60, (time % 1) * 1000)
 
     @classmethod
     def _str_to_time(cls, txt):
@@ -722,8 +722,8 @@ class Subtitle(object):
             text = text.encode('utf8', 'ignore')
 
             output.write(str(i + 1))
-            output.write('\n%s' % cls._time_to_str(start))
-            output.write(' --> %s\n' % cls._time_to_str(end))
+            output.write('\n{0!s}'.format(cls._time_to_str(start)))
+            output.write(' --> {0!s}\n'.format(cls._time_to_str(end)))
             output.write(text)
             output.write('\n\n')
 
